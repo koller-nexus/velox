@@ -1,0 +1,16 @@
+# golangci-lint configuration for velox (Constitution Principle I).
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - revive
+
+formatters:
+  enable:
+    - gofmt

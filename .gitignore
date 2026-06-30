@@ -1,0 +1,26 @@
+# Binaries
+/bin/
+*.exe
+*.test
+*.out
+
+# Build artifacts
+/dist/
+
+# Vendored deps (modules used; vendor not committed)
+/vendor/
+
+# Coverage
+coverage.out
+coverage.html
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Local env
+.env
+.env.*

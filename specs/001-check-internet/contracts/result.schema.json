@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/koller-nexus/velox/contracts/result.schema.json",
+  "title": "Velox MeasurementResult",
+  "description": "JSON emitted by `velox --check-internet --json`. Results only; goes to stdout.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["online", "startedAt", "durationMs", "phaseStatus"],
+  "properties": {
+    "online": {
+      "type": "boolean",
+      "description": "True when connectivity was confirmed (FR-001)."
+    },
+    "latencyMs": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Minimum round-trip time in milliseconds (FR-002)."
+    },
+    "jitterMs": {
+      "type": "number",
+      "minimum": 0,
+      "description": "RTT variation in milliseconds over the sampling window (FR-002)."
+    },
+    "downloadMbps": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Mean download goodput in megabits per second (SC-009)."
+    },
+    "uploadMbps": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Mean upload goodput in megabits per second (SC-009)."
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["machine"],
+      "properties": {
+        "machine": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "isFallback": { "type": "boolean" }
+      }
+    },
+    "distanceKm": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Client-to-server distance in km; null when consent declined (FR-007)."
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC run start timestamp."
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total wall-clock duration of the run."
+    },
+    "phaseStatus": {
+      "type": "object",
+      "description": "Per-phase outcome (FR-001 AS#4).",
+      "additionalProperties": false,
+      "properties": {
+        "connectivity": { "$ref": "#/$defs/phaseOutcome" },
+        "latency": { "$ref": "#/$defs/phaseOutcome" },
+        "download": { "$ref": "#/$defs/phaseOutcome" },
+        "upload": { "$ref": "#/$defs/phaseOutcome" }
+      }
+    }
+  },
+  "$defs": {
+    "phaseOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "error": { "type": "string" },
+        "value": { "type": "number" }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/koller-nexus/velox/contracts/consent.schema.json",
+  "title": "Velox Config",
+  "description": "Persisted config at os.UserConfigDir()/velox/config.json (R5).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "consent"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Config schema version for forward-compatible migrations."
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["granted", "denied", "unset"],
+          "description": "Location consent decision (FR-004/005/006)."
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the decision was made; absent/zero when unset."
+        }
+      }
+    },
+    "geoEndpoint": {
+      "type": "string",
+      "description": "Optional override URL for IP-geolocation lookup (R4). Empty = default."
+    },
+    "fallbackServer": {
+      "type": ["object", "null"],
+      "description": "Optional user-specified fallback server (FR-007/010).",
+      "additionalProperties": false,
+      "properties": {
+        "machine": { "type": "string" },
+        "downloadURL": { "type": "string" },
+        "uploadURL": { "type": "string" }
+      }
+    }
+  }
+}
