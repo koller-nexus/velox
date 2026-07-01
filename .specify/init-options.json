@@ -1,9 +1,9 @@
 {
-  "ai": "claude",
+  "ai": "kimi",
   "ai_skills": true,
   "feature_numbering": "sequential",
   "here": false,
-  "integration": "claude",
+  "integration": "kimi",
   "script": "sh",
   "speckit_version": "0.12.2"
 }
