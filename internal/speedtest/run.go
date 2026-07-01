@@ -14,6 +14,20 @@ import (
 // is known (e.g. auto-discovery path).
 const DefaultFallbackHost = "locate.measurementlab.net:443"
 
+// Reporter receives phase-transition notifications during a run. A nil Reporter
+// is ignored. Calls are synchronous on the run goroutine, so implementations
+// that touch shared state must be safe to call from it.
+type Reporter interface {
+	Phase(p Phase)
+}
+
+// report notifies r of a phase start, tolerating a nil Reporter.
+func report(r Reporter, p Phase) {
+	if r != nil {
+		r.Phase(p)
+	}
+}
+
 // Dialer abstracts connectivity probing so tests need no real network.
 type Dialer func(ctx context.Context, address string) error
 
@@ -48,8 +62,9 @@ func NewRunner(client ndt7.Client) *Runner {
 // Run executes connectivity -> download (with latency) -> upload against the
 // given server, honoring ctx cancellation. distanceKm is carried through to the
 // result. If connectivity fails, throughput phases are skipped and Online is
-// false (FR-001).
-func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *float64) (res MeasurementResult) {
+// false (FR-001). reporter, if non-nil, is notified as each phase begins
+// (presentation only; it must not affect the result — FR-008/FR-010).
+func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *float64, reporter Reporter) (res MeasurementResult) {
 	res = MeasurementResult{
 		StartedAt:   time.Now().UTC(),
 		DistanceKm:  distanceKm,
@@ -65,6 +80,7 @@ func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *floa
 	defer func() { res.DurationMs = time.Since(start).Milliseconds() }()
 
 	// Phase 1: connectivity.
+	report(reporter, PhaseConnectivity)
 	if err := r.connectivity(ctx, server); err != nil {
 		res.Online = false
 		res.PhaseStatus[PhaseConnectivity] = PhaseOutcome{OK: false, Error: err.Error()}
@@ -74,6 +90,7 @@ func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *floa
 	res.PhaseStatus[PhaseConnectivity] = PhaseOutcome{OK: true}
 
 	// Phase 2+3: download (also yields latency/jitter).
+	report(reporter, PhaseDownload)
 	dl, err := r.runPhase(ctx, func(c context.Context) (ndt7.Throughput, error) {
 		return r.Client.Download(c, server.DownloadURL)
 	})
@@ -89,6 +106,7 @@ func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *floa
 	}
 
 	// Phase 4: upload.
+	report(reporter, PhaseUpload)
 	ul, err := r.runPhase(ctx, func(c context.Context) (ndt7.Throughput, error) {
 		return r.Client.Upload(c, server.UploadURL)
 	})

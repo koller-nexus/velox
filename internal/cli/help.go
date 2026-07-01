@@ -16,6 +16,7 @@ FLAGS (--check-internet):
   --json            Emit machine-readable JSON (units: latency/jitter in ms, throughput in Mbps).
   --server <url>    Override the test server (ndt7 service URL); bypasses selection.
   --timeout <dur>   Overall run budget (default 60s).
+  --no-progress     Disable the loading indicator (also disabled when not a TTY or under --verbose).
   -v, --verbose     Verbose diagnostics on stderr.
 
 METRICS:

@@ -41,7 +41,7 @@ func TestRunHappyPath(t *testing.T) {
 	}
 	r := newTestRunner(c, nil)
 	dist := 12.0
-	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, &dist)
+	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, &dist, nil)
 
 	if !res.Online {
 		t.Fatal("expected online")
@@ -65,7 +65,7 @@ func TestRunHappyPath(t *testing.T) {
 func TestRunOfflineSkipsThroughput(t *testing.T) {
 	c := &fakeClient{}
 	r := newTestRunner(c, errors.New("network down"))
-	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil)
+	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil, nil)
 
 	if res.Online {
 		t.Fatal("expected offline")
@@ -81,7 +81,7 @@ func TestRunOfflineSkipsThroughput(t *testing.T) {
 func TestRunPhaseFailureRecorded(t *testing.T) {
 	c := &fakeClient{dlErr: errors.New("download stalled"), ul: ndt7.Throughput{Mbps: 5}}
 	r := newTestRunner(c, nil)
-	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil)
+	res := r.Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil, nil)
 
 	if !res.Online {
 		t.Fatal("expected online (connectivity ok)")
@@ -95,4 +95,50 @@ func TestRunPhaseFailureRecorded(t *testing.T) {
 	if !res.PhaseStatus[PhaseUpload].OK {
 		t.Error("upload should still run after download failure")
 	}
+}
+
+// recordingReporter captures the order of phase-start notifications.
+type recordingReporter struct{ phases []Phase }
+
+func (r *recordingReporter) Phase(p Phase) { r.phases = append(r.phases, p) }
+
+func TestRunReportsPhasesInOrder(t *testing.T) {
+	t.Run("healthy run announces connectivity, download, upload", func(t *testing.T) {
+		c := &fakeClient{dl: ndt7.Throughput{Mbps: 100}, ul: ndt7.Throughput{Mbps: 10}}
+		rep := &recordingReporter{}
+		newTestRunner(c, nil).Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil, rep)
+
+		want := []Phase{PhaseConnectivity, PhaseDownload, PhaseUpload}
+		if !equalPhases(rep.phases, want) {
+			t.Errorf("phases = %v, want %v", rep.phases, want)
+		}
+	})
+
+	t.Run("offline run announces only connectivity", func(t *testing.T) {
+		rep := &recordingReporter{}
+		newTestRunner(&fakeClient{}, errors.New("down")).Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil, rep)
+
+		want := []Phase{PhaseConnectivity}
+		if !equalPhases(rep.phases, want) {
+			t.Errorf("phases = %v, want %v", rep.phases, want)
+		}
+	})
+
+	t.Run("nil reporter is safe", func(_ *testing.T) {
+		c := &fakeClient{dl: ndt7.Throughput{Mbps: 100}, ul: ndt7.Throughput{Mbps: 10}}
+		// Must not panic.
+		newTestRunner(c, nil).Run(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil, nil)
+	})
+}
+
+func equalPhases(a, b []Phase) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

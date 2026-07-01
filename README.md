@@ -26,6 +26,7 @@ produced by `make cross` (output in `dist/`).
 ```bash
 velox --check-internet           # run a full speed test
 velox --check-internet --json    # machine-readable output
+velox --check-internet --no-progress  # disable the loading indicator
 velox --server <wss-url>         # test against a specific ndt7 server
 velox --version
 velox --help
@@ -40,6 +41,14 @@ Velox speed test
   Download:  347.2 Mbps
   Upload:    322.5 Mbps
 ```
+
+On an interactive terminal, velox shows an animated loading indicator on stderr
+while the test runs (selecting server → checking connectivity → measuring
+download → measuring upload, with elapsed time), then clears it before printing
+results. The indicator is written only to stderr, so `--json` and piped output on
+stdout stay clean. It is suppressed automatically when output is not a terminal
+(pipe, redirect, CI, `TERM=dumb`, or `NO_COLOR`), under `--verbose`, or with
+`--no-progress`.
 
 ### Metrics
 

@@ -32,7 +32,7 @@ func TestFullSpeedTestAutoDiscovery(t *testing.T) {
 	defer cancel()
 
 	runner := speedtest.NewRunner(ndt7.NewMLabClient())
-	res := runner.Run(ctx, locate.Server{Machine: "(auto)", IsFallback: true}, nil)
+	res := runner.Run(ctx, locate.Server{Machine: "(auto)", IsFallback: true}, nil, nil)
 
 	if !res.Online {
 		t.Fatal("expected online")

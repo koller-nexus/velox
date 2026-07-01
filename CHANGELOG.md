@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Loading indicator for `velox --check-internet`: on an interactive terminal an
+  animated spinner shows the current phase (selecting server, checking
+  connectivity, measuring download, measuring upload) and elapsed time on stderr,
+  then clears before results print. It is suppressed on non-terminals (pipe,
+  redirect, CI, `TERM=dumb`, `NO_COLOR`) and under `--verbose`, keeping stdout and
+  `--json` output clean.
+- `--no-progress` flag to disable the loading indicator even on a terminal.
 - `velox --check-internet`: full internet speed test — connectivity, latency,
   jitter, download and upload throughput — against the nearest open test server.
 - Nearest-server selection via the M-Lab Locate API v2 (open registry, no API

@@ -40,7 +40,7 @@ func (f fakeConsent) Reset() error                       { return nil }
 // fakeRunner echoes the server/distance it was given so the flow can be asserted.
 type fakeRunner struct{ gotServer locate.Server }
 
-func (r *fakeRunner) Run(_ context.Context, s locate.Server, d *float64) speedtest.MeasurementResult {
+func (r *fakeRunner) Run(_ context.Context, s locate.Server, d *float64, _ speedtest.Reporter) speedtest.MeasurementResult {
 	r.gotServer = s
 	return speedtest.MeasurementResult{
 		Online:       true,
@@ -157,5 +157,34 @@ func TestServerOverrideBypassesSelection(t *testing.T) {
 	}
 	if run.gotServer.DownloadURL != "wss://h/ndt/v7/download" {
 		t.Errorf("override not applied: %+v", run.gotServer)
+	}
+}
+
+func TestNoProgressFlagParsesAndRuns(t *testing.T) {
+	run := &fakeRunner{}
+	var out, errw bytes.Buffer
+	a := newApp(&out, &errw, fakeLocator{err: context.Canceled}, run, fakeConsent{})
+	code := a.Run(context.Background(), []string{"--check-internet", "--no-progress"})
+	if code != ExitOK {
+		t.Fatalf("exit = %d, want 0", code)
+	}
+}
+
+func TestJSONOutputIsSingleValidDocument(t *testing.T) {
+	run := &fakeRunner{}
+	var out, errw bytes.Buffer
+	a := newApp(&out, &errw, fakeLocator{err: context.Canceled}, run, fakeConsent{})
+
+	code := a.Run(context.Background(), []string{"--check-internet", "--json"})
+	if code != ExitOK {
+		t.Fatalf("exit = %d, want 0", code)
+	}
+	// stdout must be exactly one valid JSON document, with no indicator escape codes.
+	if strings.ContainsRune(out.String(), '\x1b') {
+		t.Errorf("stdout contains escape sequences: %q", out.String())
+	}
+	var res speedtest.MeasurementResult
+	if err := json.Unmarshal(out.Bytes(), &res); err != nil {
+		t.Fatalf("stdout is not a single valid JSON document: %v\n%s", err, out.String())
 	}
 }

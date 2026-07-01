@@ -28,7 +28,7 @@ const (
 
 // SpeedRunner runs a measurement against a server. Implemented by *speedtest.Runner.
 type SpeedRunner interface {
-	Run(ctx context.Context, server locate.Server, distanceKm *float64) speedtest.MeasurementResult
+	Run(ctx context.Context, server locate.Server, distanceKm *float64, reporter speedtest.Reporter) speedtest.MeasurementResult
 }
 
 // ConsentManager gates and manages the location-consent decision. Implemented
@@ -47,6 +47,7 @@ type App struct {
 	Stdin   *os.File
 	StdinF  *os.File // for TTY detection (usually == Stdin)
 	StdoutF *os.File // for TTY detection
+	StderrF *os.File // for TTY detection of the progress indicator's stream
 
 	Locator     locate.Locator
 	NewResolver func(endpoint string) geo.Resolver
@@ -63,6 +64,7 @@ func NewApp() *App {
 		Stdin:       os.Stdin,
 		StdinF:      os.Stdin,
 		StdoutF:     os.Stdout,
+		StderrF:     os.Stderr,
 		Locator:     locate.NewClient(),
 		NewResolver: func(endpoint string) geo.Resolver { return geo.NewIPResolver(endpoint) },
 		Runner:      speedtest.NewRunner(ndt7.NewMLabClient()),
@@ -87,13 +89,14 @@ func (a *App) runRoot(ctx context.Context, args []string) int {
 	fs := flag.NewFlagSet("velox", flag.ContinueOnError)
 	fs.SetOutput(a.Stderr)
 	var (
-		check    = fs.Bool("check-internet", false, "run a full internet speed test")
-		asJSON   = fs.Bool("json", false, "emit machine-readable JSON")
-		server   = fs.String("server", "", "override the test server (ndt7 service URL)")
-		timeout  = fs.Duration("timeout", 60*time.Second, "overall run budget")
-		verbose  = fs.Bool("verbose", false, "verbose diagnostics on stderr")
-		showVer  = fs.Bool("version", false, "print version and exit")
-		showHelp = fs.Bool("help", false, "print help and exit")
+		check      = fs.Bool("check-internet", false, "run a full internet speed test")
+		asJSON     = fs.Bool("json", false, "emit machine-readable JSON")
+		server     = fs.String("server", "", "override the test server (ndt7 service URL)")
+		timeout    = fs.Duration("timeout", 60*time.Second, "overall run budget")
+		verbose    = fs.Bool("verbose", false, "verbose diagnostics on stderr")
+		noProgress = fs.Bool("no-progress", false, "disable the loading indicator")
+		showVer    = fs.Bool("version", false, "print version and exit")
+		showHelp   = fs.Bool("help", false, "print help and exit")
 	)
 	fs.BoolVar(verbose, "v", false, "verbose diagnostics on stderr (shorthand)")
 
@@ -116,11 +119,20 @@ func (a *App) runRoot(ctx context.Context, args []string) int {
 	ctx, cancel := context.WithTimeout(ctx, *timeout)
 	defer cancel()
 
+	// Loading indicator: animates only on an interactive terminal and not under
+	// --no-progress/--verbose. Writes to stderr; stopped before results render so
+	// stdout stays clean (FR-003/FR-005/FR-006).
+	ind := a.newIndicator(*noProgress, *verbose)
+	ind.Start()
+	defer ind.Stop() // safety net for cancellation / early-return paths (FR-007)
+
+	ind.SetPhase("selecting server…")
 	server2, distance := a.selectServer(ctx, *server, *verbose)
 	if *verbose {
 		fmt.Fprintf(a.Stderr, "velox: testing against %s\n", server2.Machine)
 	}
-	res := a.Runner.Run(ctx, server2, distance)
+	res := a.Runner.Run(ctx, server2, distance, phaseReporter{ind})
+	ind.Stop() // clear the indicator before printing results (FR-006/SC-007)
 
 	if *asJSON {
 		if err := renderJSON(a.Stdout, res); err != nil {
