@@ -55,6 +55,17 @@ func (r *fakeRunner) Run(_ context.Context, s locate.Server, d *float64, _ speed
 	}
 }
 
+func (r *fakeRunner) Latency(_ context.Context, s locate.Server, d *float64) speedtest.LatencyResult {
+	r.gotServer = s
+	return speedtest.LatencyResult{
+		Online:     true,
+		LatencyMs:  9.9,
+		JitterMs:   1.1,
+		Server:     &speedtest.ServerInfo{Machine: s.Machine, IsFallback: s.IsFallback},
+		DistanceKm: d,
+	}
+}
+
 func newApp(out, errw *bytes.Buffer, loc locate.Locator, run SpeedRunner, con ConsentManager) *App {
 	return &App{
 		Stdout:      out,

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velox/contracts/servers.schema.json",
+  "title": "velox servers --json output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["locationUsed", "servers"],
+  "properties": {
+    "locationUsed": {
+      "type": "boolean",
+      "description": "True when an IP-based location estimate was applied (consent granted and resolved). When false, servers are in Locate proximity order and distanceKm is absent."
+    },
+    "servers": {
+      "type": "array",
+      "description": "The server velox would select plus next-nearest alternatives, about 5 total, in proximity order.",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["machine", "site", "selected"],
+        "properties": {
+          "machine": {
+            "type": "string",
+            "description": "ndt7 machine FQDN."
+          },
+          "site": {
+            "type": "string",
+            "description": "M-Lab site code, e.g. gru01."
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "distanceKm": {
+            "type": ["number", "null"],
+            "description": "Great-circle distance in km when a location estimate is available; null otherwise."
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "True for the single server velox would use for a real run."
+          }
+        }
+      }
+    }
+  }
+}

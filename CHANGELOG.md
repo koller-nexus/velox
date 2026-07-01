@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Command help system: `velox help` prints an overview of every command
+  (generated from a command registry, so it stays complete), and
+  `velox help <command>` / `velox <command> --help` print detailed usage.
+  Unknown commands or flags report to stderr, suggest `velox help`, and exit `2`.
+- `velox version` subcommand — the command form of `--version` (offline).
+- `velox servers` — list the nearest test servers velox would select (the pick
+  plus ~4 nearest alternatives) with location and distance, honoring the consent
+  gate; `--json` supported.
+- `velox ping` — measure latency and jitter only, sampling round-trip time over a
+  short (~5s) window via the ndt7 download subtest (no download/upload
+  throughput); `--json` and `--server`/`--timeout` supported.
+- `velox config` — show the config file path/directory, consent decision, and
+  effective settings; read-only and offline; `--json` supported.
 - Loading indicator for `velox --check-internet`: on an interactive terminal an
   animated spinner shows the current phase (selecting server, checking
   connectivity, measuring download, measuring upload) and elapsed time on stderr,

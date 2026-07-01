@@ -11,10 +11,12 @@ import (
 
 // fakeClient implements ndt7.Client without any network.
 type fakeClient struct {
-	dl, ul ndt7.Throughput
-	dlErr  error
-	ulErr  error
-	calls  []string
+	dl, ul   ndt7.Throughput
+	dlLat    ndt7.Throughput
+	dlErr    error
+	ulErr    error
+	dlLatErr error
+	calls    []string
 }
 
 func (f *fakeClient) Download(_ context.Context, _ string) (ndt7.Throughput, error) {
@@ -25,6 +27,11 @@ func (f *fakeClient) Download(_ context.Context, _ string) (ndt7.Throughput, err
 func (f *fakeClient) Upload(_ context.Context, _ string) (ndt7.Throughput, error) {
 	f.calls = append(f.calls, "upload")
 	return f.ul, f.ulErr
+}
+
+func (f *fakeClient) DownloadLatency(_ context.Context, _ string) (ndt7.Throughput, error) {
+	f.calls = append(f.calls, "downloadLatency")
+	return f.dlLat, f.dlLatErr
 }
 
 func newTestRunner(c ndt7.Client, dialErr error) *Runner {
@@ -94,6 +101,40 @@ func TestRunPhaseFailureRecorded(t *testing.T) {
 	}
 	if !res.PhaseStatus[PhaseUpload].OK {
 		t.Error("upload should still run after download failure")
+	}
+}
+
+func TestLatencyReportsRTTOnly(t *testing.T) {
+	c := &fakeClient{dlLat: ndt7.Throughput{Mbps: 999, MinRTTMs: 7.5, JitterMs: 0.9}}
+	r := newTestRunner(c, nil)
+	dist := 5.0
+	res := r.Latency(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, &dist)
+
+	if !res.Online {
+		t.Fatal("expected online")
+	}
+	if res.LatencyMs != 7.5 || res.JitterMs != 0.9 {
+		t.Errorf("latency/jitter wrong: %+v", res)
+	}
+	// Only the latency-sampling path runs — no download/upload throughput phases.
+	if len(c.calls) != 1 || c.calls[0] != "downloadLatency" {
+		t.Errorf("expected only downloadLatency, got %v", c.calls)
+	}
+	if res.DistanceKm == nil || *res.DistanceKm != 5.0 {
+		t.Errorf("distance not carried through")
+	}
+}
+
+func TestLatencyOfflineSkipsSample(t *testing.T) {
+	c := &fakeClient{}
+	r := newTestRunner(c, errors.New("down"))
+	res := r.Latency(context.Background(), locate.Server{Machine: "m", DownloadURL: "wss://h/d"}, nil)
+
+	if res.Online {
+		t.Fatal("expected offline")
+	}
+	if len(c.calls) != 0 {
+		t.Errorf("no sampling when offline, got %v", c.calls)
 	}
 }
 

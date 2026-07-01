@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velox/contracts/ping.schema.json",
+  "title": "velox ping --json output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["online", "durationMs"],
+  "properties": {
+    "online": {
+      "type": "boolean",
+      "description": "Connectivity succeeded."
+    },
+    "latencyMs": {
+      "type": "number",
+      "description": "Minimum round-trip time in ms, same definition as a full run. Omitted when offline/sample failed."
+    },
+    "jitterMs": {
+      "type": "number",
+      "description": "RTT variation in ms over the short sampling window. Omitted when offline/sample failed."
+    },
+    "server": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "machine": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "isFallback": { "type": "boolean" }
+      }
+    },
+    "distanceKm": {
+      "type": ["number", "null"],
+      "description": "Client to server distance in km when known; null otherwise."
+    },
+    "durationMs": {
+      "type": "integer",
+      "description": "Wall-clock duration of the latency sample in milliseconds."
+    }
+  }
+}

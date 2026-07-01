@@ -1,24 +1,47 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
 	"github.com/koller-nexus/velox/internal/config"
 )
 
+const consentUsage = `velox consent — manage the location-lookup consent decision.
+
+USAGE:
+  velox consent --status    Print the current decision (granted|denied|unset).
+  velox consent --grant     Allow IP-based location lookups.
+  velox consent --deny      Disallow location lookups.
+  velox consent --reset     Forget the decision (asked again next time).
+
+velox asks for consent once before using your approximate, IP-based location to
+pick the nearest server. See 'velox --help' for the privacy summary.
+`
+
+// consentCommand registers `velox consent` in the command registry (FR-005/FR-007)
+// so it appears in `velox help` and supports `velox consent --help`.
+func (a *App) consentCommand() *Command {
+	return &Command{
+		Name:    "consent",
+		Summary: "Manage location-lookup consent (status/grant/deny/reset)",
+		Usage:   consentUsage,
+		Run:     a.runConsent,
+	}
+}
+
 // runConsent implements `velox consent` (FR-005/006).
-func (a *App) runConsent(args []string) int {
-	fs := flag.NewFlagSet("velox consent", flag.ContinueOnError)
-	fs.SetOutput(a.Stderr)
+func (a *App) runConsent(_ context.Context, args []string) int {
+	fs := flag.NewFlagSet("consent", flag.ContinueOnError)
 	var (
 		status = fs.Bool("status", false, "print the current consent decision")
 		reset  = fs.Bool("reset", false, "clear the stored consent decision")
 		grant  = fs.Bool("grant", false, "record consent as granted")
 		deny   = fs.Bool("deny", false, "record consent as denied")
 	)
-	if err := fs.Parse(args); err != nil {
-		return ExitUsage
+	if code, handled := a.parseCommandFlags(fs, consentUsage, args); handled {
+		return code
 	}
 
 	switch {
@@ -42,7 +65,7 @@ func (a *App) runConsent(args []string) int {
 	case *deny:
 		return a.setConsent(config.DecisionDenied)
 	default:
-		fmt.Fprintln(a.Stderr, "velox consent: specify one of --status, --reset, --grant, --deny")
+		fmt.Fprintln(a.Stderr, "velox consent: specify one of --status, --reset, --grant, --deny (see 'velox help consent')")
 		return ExitUsage
 	}
 }

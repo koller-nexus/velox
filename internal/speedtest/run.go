@@ -47,6 +47,7 @@ type Runner struct {
 
 	ConnectTimeout time.Duration // default 5s (SC-001)
 	PhaseTimeout   time.Duration // default 20s per throughput phase
+	LatencyWindow  time.Duration // default 5s for the latency-only sample (FR-013)
 }
 
 // NewRunner returns a Runner with default timeouts using real measurements.
@@ -56,6 +57,7 @@ func NewRunner(client ndt7.Client) *Runner {
 		Dial:           tcpDial,
 		ConnectTimeout: 5 * time.Second,
 		PhaseTimeout:   20 * time.Second,
+		LatencyWindow:  5 * time.Second,
 	}
 }
 
@@ -120,6 +122,53 @@ func (r *Runner) Run(ctx context.Context, server locate.Server, distanceKm *floa
 	return res
 }
 
+// LatencyResult is the outcome of a latency-only measurement (FR-013). It
+// reports latency/jitter without any throughput figures. Its JSON encoding
+// conforms to contracts/ping.schema.json.
+type LatencyResult struct {
+	Online     bool        `json:"online"`
+	LatencyMs  float64     `json:"latencyMs,omitempty"`
+	JitterMs   float64     `json:"jitterMs,omitempty"`
+	Server     *ServerInfo `json:"server,omitempty"`
+	DistanceKm *float64    `json:"distanceKm"`
+	DurationMs int64       `json:"durationMs"`
+}
+
+// Latency measures latency and jitter only: it checks connectivity, then samples
+// round-trip time over a short window (LatencyWindow) via the ndt7 download
+// subtest, skipping the bulk download/upload phases (FR-013). Throughput is never
+// reported. It honors ctx cancellation and never blocks past the window.
+func (r *Runner) Latency(ctx context.Context, server locate.Server, distanceKm *float64) LatencyResult {
+	res := LatencyResult{
+		DistanceKm: distanceKm,
+		Server: &ServerInfo{
+			Machine:    server.Machine,
+			City:       server.City,
+			Country:    server.Country,
+			IsFallback: server.IsFallback,
+		},
+	}
+	start := time.Now()
+	defer func() { res.DurationMs = time.Since(start).Milliseconds() }()
+
+	if err := r.connectivity(ctx, server); err != nil {
+		res.Online = false
+		return res
+	}
+	res.Online = true
+
+	sctx, cancel := context.WithTimeout(ctx, r.latencyWindow())
+	defer cancel()
+	tp, err := r.Client.DownloadLatency(sctx, server.DownloadURL)
+	if err != nil {
+		// Connectivity is up but the sample failed; leave latency/jitter unset.
+		return res
+	}
+	res.LatencyMs = tp.MinRTTMs
+	res.JitterMs = tp.JitterMs
+	return res
+}
+
 func (r *Runner) connectivity(ctx context.Context, server locate.Server) error {
 	addr := hostPort(server.DownloadURL)
 	if addr == "" {
@@ -152,6 +201,13 @@ func (r *Runner) phaseTimeout() time.Duration {
 		return 20 * time.Second
 	}
 	return r.PhaseTimeout
+}
+
+func (r *Runner) latencyWindow() time.Duration {
+	if r.LatencyWindow <= 0 {
+		return 5 * time.Second
+	}
+	return r.LatencyWindow
 }
 
 // hostPort extracts host:port from a wss:// URL, defaulting to port 443.
