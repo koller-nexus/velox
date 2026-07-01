@@ -32,6 +32,27 @@ velox --version
 velox --help
 ```
 
+### Commands
+
+Beyond the full test, velox exposes small, focused subcommands. Run
+`velox help` for the overview, or `velox help <command>` (same as
+`velox <command> --help`) for details.
+
+```bash
+velox help [command]   # overview, or detailed help for a command
+velox version          # print the version (same as --version)
+velox servers          # list the nearest servers velox would use (--json)
+velox ping             # latency + jitter only, no throughput (--json)
+velox config           # show config path and effective settings (--json)
+velox consent --status # manage location-lookup consent
+```
+
+`help`, `version`, and `config` never touch the network. `servers` uses your
+location only with consent (falling back to registry order otherwise); `ping`
+samples round-trip time over a short (~5s) window against the selected server.
+Unknown commands or flags print an error to stderr and exit with code `2`.
+
+
 Example:
 
 ```text

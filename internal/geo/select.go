@@ -1,6 +1,10 @@
 package geo
 
-import "github.com/koller-nexus/velox/internal/locate"
+import (
+	"sort"
+
+	"github.com/koller-nexus/velox/internal/locate"
+)
 
 // Selection is the chosen server plus the client->server distance, when known.
 type Selection struct {
@@ -37,4 +41,50 @@ func SelectNearest(servers []locate.Server, est *LocationEstimate) (Selection, b
 	}
 	dist := bestDist
 	return Selection{Server: servers[bestIdx], DistanceKm: &dist}, true
+}
+
+// RankByDistance orders candidates nearest-first when a location estimate is
+// available, computing each client->server distance; candidates with known
+// coordinates sort ahead of those without (which keep their registry order).
+// When est is nil, candidates are returned in their original registry order with
+// nil distances. The first element is always the server SelectNearest would pick,
+// so callers can mark it as the selected server.
+func RankByDistance(servers []locate.Server, est *LocationEstimate) []Selection {
+	out := make([]Selection, 0, len(servers))
+	if est == nil {
+		for _, s := range servers {
+			out = append(out, Selection{Server: s})
+		}
+		return out
+	}
+
+	type ranked struct {
+		sel      Selection
+		dist     float64
+		hasCoord bool
+		order    int
+	}
+	items := make([]ranked, 0, len(servers))
+	for i, s := range servers {
+		if s.HasCoords {
+			d := HaversineKm(est.Lat, est.Lon, s.Lat, s.Lon)
+			dd := d
+			items = append(items, ranked{Selection{Server: s, DistanceKm: &dd}, d, true, i})
+		} else {
+			items = append(items, ranked{Selection{Server: s}, 0, false, i})
+		}
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		if items[i].hasCoord != items[j].hasCoord {
+			return items[i].hasCoord // coord'd candidates first
+		}
+		if items[i].hasCoord {
+			return items[i].dist < items[j].dist
+		}
+		return items[i].order < items[j].order // preserve registry order otherwise
+	})
+	for _, it := range items {
+		out = append(out, it.sel)
+	}
+	return out
 }

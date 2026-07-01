@@ -27,6 +27,11 @@ type Throughput struct {
 type Client interface {
 	Download(ctx context.Context, serviceURL string) (Throughput, error)
 	Upload(ctx context.Context, serviceURL string) (Throughput, error)
+	// DownloadLatency runs the download subtest to sample RTT/jitter for a
+	// latency-only check. Unlike Download, when ctx's deadline fires it returns
+	// the RTT statistics gathered so far instead of an error, so a short
+	// sampling window still yields a reading (see internal/speedtest.Runner.Latency).
+	DownloadLatency(ctx context.Context, serviceURL string) (Throughput, error)
 }
 
 // MLabClient is the production Client backed by github.com/m-lab/ndt7-client-go.
@@ -57,7 +62,22 @@ func (m *MLabClient) Download(ctx context.Context, serviceURL string) (Throughpu
 	if err != nil {
 		return Throughput{}, fmt.Errorf("start ndt7 download: %w", err)
 	}
-	return consume(ctx, ch, true)
+	return consume(ctx, ch, true, false)
+}
+
+// DownloadLatency runs the download subtest but returns whatever RTT statistics
+// were gathered when the context deadline fires, so a short window still yields
+// a latency/jitter reading (no throughput guarantees).
+func (m *MLabClient) DownloadLatency(ctx context.Context, serviceURL string) (Throughput, error) {
+	c, err := newLibClient(serviceURL)
+	if err != nil {
+		return Throughput{}, err
+	}
+	ch, err := c.StartDownload(ctx)
+	if err != nil {
+		return Throughput{}, fmt.Errorf("start ndt7 download: %w", err)
+	}
+	return consume(ctx, ch, true, true)
 }
 
 // Upload measures upload goodput.
@@ -70,12 +90,16 @@ func (m *MLabClient) Upload(ctx context.Context, serviceURL string) (Throughput,
 	if err != nil {
 		return Throughput{}, fmt.Errorf("start ndt7 upload: %w", err)
 	}
-	return consume(ctx, ch, false)
+	return consume(ctx, ch, false, false)
 }
 
 // consume drains a measurement channel, computing goodput from the last
 // application-level sample and (for downloads) RTT statistics from TCPInfo.
-func consume(ctx context.Context, ch <-chan spec.Measurement, wantRTT bool) (Throughput, error) {
+//
+// When partialOnDeadline is true and ctx is cancelled, it returns the statistics
+// gathered so far (used by the latency-only path); otherwise a cancelled ctx
+// returns ctx.Err() so the full-measurement path fails cleanly.
+func consume(ctx context.Context, ch <-chan spec.Measurement, wantRTT, partialOnDeadline bool) (Throughput, error) {
 	var (
 		lastBytes, lastElapsed int64
 		rtts                   []float64
@@ -83,6 +107,9 @@ func consume(ctx context.Context, ch <-chan spec.Measurement, wantRTT bool) (Thr
 	for {
 		select {
 		case <-ctx.Done():
+			if partialOnDeadline {
+				return finalize(lastBytes, lastElapsed, rtts), nil
+			}
 			return Throughput{}, ctx.Err()
 		case m, ok := <-ch:
 			if !ok {

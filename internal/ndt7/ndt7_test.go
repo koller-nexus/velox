@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"testing"
+	"time"
 
 	"github.com/m-lab/ndt7-client-go/spec"
 )
@@ -45,7 +46,7 @@ func TestConsumeDrainsChannel(t *testing.T) {
 	ch <- last
 	close(ch)
 
-	got, err := consume(context.Background(), ch, true)
+	got, err := consume(context.Background(), ch, true, false)
 	if err != nil {
 		t.Fatalf("consume: %v", err)
 	}
@@ -61,7 +62,30 @@ func TestConsumeHonorsCancellation(t *testing.T) {
 	ch := make(chan spec.Measurement) // never sends
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := consume(ctx, ch, false); err == nil {
+	// Default (partialOnDeadline=false): a cancelled ctx must error, preserving
+	// the full-measurement contract (G1 regression guard).
+	if _, err := consume(ctx, ch, false, false); err == nil {
 		t.Fatal("expected cancellation error")
+	}
+}
+
+func TestConsumePartialOnDeadlineReturnsGatheredRTT(t *testing.T) {
+	// One RTT sample is buffered; the loop consumes it before the short deadline
+	// fires, then the deadline returns the partial stats (no error).
+	ch := make(chan spec.Measurement, 1)
+	m := spec.Measurement{AppInfo: &spec.AppInfo{NumBytes: 1_000_000, ElapsedTime: 1_000_000}}
+	m.TCPInfo = &spec.TCPInfo{}
+	m.TCPInfo.RTT = 12_000 // 12 ms
+	ch <- m
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	got, err := consume(ctx, ch, true, true)
+	if err != nil {
+		t.Fatalf("partialOnDeadline consume should not error: %v", err)
+	}
+	if !approx(got.MinRTTMs, 12.0, 1e-9) {
+		t.Errorf("MinRTTMs = %v, want 12", got.MinRTTMs)
 	}
 }

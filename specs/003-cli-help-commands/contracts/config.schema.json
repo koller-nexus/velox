@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velox/contracts/config.schema.json",
+  "title": "velox config --json output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["configPath", "configDir", "consent"],
+  "properties": {
+    "configPath": {
+      "type": "string",
+      "description": "Absolute path to the velox config.json file."
+    },
+    "configDir": {
+      "type": "string",
+      "description": "Parent directory of configPath."
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["unset", "granted", "denied"]
+        },
+        "decidedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the decision was recorded; null/absent when unset."
+        }
+      }
+    },
+    "geoEndpoint": {
+      "type": "string",
+      "description": "Effective geolocation endpoint override; empty when using the default."
+    },
+    "fallbackServer": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "machine": { "type": "string" },
+        "downloadURL": { "type": "string" },
+        "uploadURL": { "type": "string" }
+      }
+    }
+  }
+}

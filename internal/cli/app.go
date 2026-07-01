@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/koller-nexus/velox/internal/config"
@@ -26,9 +27,10 @@ const (
 	ExitUsage   = 2 // bad flags/args
 )
 
-// SpeedRunner runs a measurement against a server. Implemented by *speedtest.Runner.
+// SpeedRunner runs measurements against a server. Implemented by *speedtest.Runner.
 type SpeedRunner interface {
 	Run(ctx context.Context, server locate.Server, distanceKm *float64, reporter speedtest.Reporter) speedtest.MeasurementResult
+	Latency(ctx context.Context, server locate.Server, distanceKm *float64) speedtest.LatencyResult
 }
 
 // ConsentManager gates and manages the location-consent decision. Implemented
@@ -74,13 +76,18 @@ func NewApp() *App {
 }
 
 // Run parses args and dispatches. It returns a process exit code.
+//
+// A bare invocation prints the overview. A first argument that is not a flag is
+// treated as a subcommand and dispatched via the registry (FR-005/FR-007); a
+// leading-dash first argument keeps the historical root flags
+// (--check-internet/--version/--help).
 func (a *App) Run(ctx context.Context, args []string) int {
 	if len(args) == 0 {
-		a.printUsage()
+		a.printOverview()
 		return ExitOK
 	}
-	if args[0] == "consent" {
-		return a.runConsent(args[1:])
+	if !strings.HasPrefix(args[0], "-") {
+		return a.dispatch(ctx, args)
 	}
 	return a.runRoot(ctx, args)
 }
@@ -99,12 +106,13 @@ func (a *App) runRoot(ctx context.Context, args []string) int {
 		showHelp   = fs.Bool("help", false, "print help and exit")
 	)
 	fs.BoolVar(verbose, "v", false, "verbose diagnostics on stderr (shorthand)")
+	fs.BoolVar(showHelp, "h", false, "print help and exit (shorthand)")
 
 	if err := fs.Parse(args); err != nil {
 		return ExitUsage
 	}
 	if *showHelp {
-		a.printUsage()
+		a.printOverview()
 		return ExitOK
 	}
 	if *showVer {
@@ -112,7 +120,7 @@ func (a *App) runRoot(ctx context.Context, args []string) int {
 		return ExitOK
 	}
 	if !*check {
-		a.printUsage()
+		a.printOverview()
 		return ExitUsage
 	}
 
