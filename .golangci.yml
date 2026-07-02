@@ -10,6 +10,12 @@ linters:
     - unused
     - misspell
     - revive
+  exclusions:
+    presets:
+      # Ignore conventionally-unchecked stdlib errors: fmt.Fprint* to
+      # stdout/stderr, Close/Flush in defers, os.Remove cleanup, etc. This
+      # matches the codebase's established CLI I/O style.
+      - std-error-handling
 
 formatters:
   enable:

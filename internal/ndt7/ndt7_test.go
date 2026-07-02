@@ -20,9 +20,9 @@ func TestFinalizeComputesMbps(t *testing.T) {
 }
 
 func TestRTTStats(t *testing.T) {
-	min, jitter := rttStats([]float64{10, 20, 30})
-	if min != 10 {
-		t.Errorf("min = %v, want 10", min)
+	minRTT, jitter := rttStats([]float64{10, 20, 30})
+	if minRTT != 10 {
+		t.Errorf("min = %v, want 10", minRTT)
 	}
 	// stddev of {10,20,30} = sqrt(200/3) ≈ 8.165
 	if !approx(jitter, math.Sqrt(200.0/3.0), 1e-6) {
