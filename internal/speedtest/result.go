@@ -7,6 +7,7 @@ import "time"
 // Phase names a stage of a run.
 type Phase string
 
+// Phase constants for each stage of a measurement run.
 const (
 	PhaseConnectivity Phase = "connectivity"
 	PhaseLatency      Phase = "latency"

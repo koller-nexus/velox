@@ -136,15 +136,15 @@ func finalize(numBytes, elapsedUS int64, rtts []float64) Throughput {
 	return t
 }
 
-func rttStats(rtts []float64) (min, jitter float64) {
+func rttStats(rtts []float64) (minRTT, jitter float64) {
 	if len(rtts) == 0 {
 		return 0, 0
 	}
-	min = rtts[0]
+	minRTT = rtts[0]
 	var sum float64
 	for _, v := range rtts {
-		if v < min {
-			min = v
+		if v < minRTT {
+			minRTT = v
 		}
 		sum += v
 	}
@@ -155,5 +155,5 @@ func rttStats(rtts []float64) (min, jitter float64) {
 		variance += d * d
 	}
 	variance /= float64(len(rtts))
-	return min, math.Sqrt(variance)
+	return minRTT, math.Sqrt(variance)
 }
