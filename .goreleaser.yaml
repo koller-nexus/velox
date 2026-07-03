@@ -1,0 +1,75 @@
+version: 2
+
+project_name: velox
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: velox
+    main: ./cmd/velox
+    binary: velox
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X github.com/koller-nexus/velox/internal/version.Version={{.Version}}
+      - -X github.com/koller-nexus/velox/internal/version.Commit={{.ShortCommit}}
+      - -X github.com/koller-nexus/velox/internal/version.Date={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  github:
+    owner: koller-nexus
+    name: velox
+  draft: false
+  prerelease: auto
+
+brews:
+  - name: velox
+    repository:
+      owner: koller-nexus
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/koller-nexus/velox
+    description: "CLI para teste de conexão com a internet"
+    license: MIT
+    install: |
+      bin.install "velox"
+    test: |
+      system "#{bin}/velox", "version"
