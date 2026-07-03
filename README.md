@@ -10,16 +10,54 @@ gate before it ever uses your location.
 ![Go 1.26](https://img.shields.io/badge/go-1.26.4-00ADD8)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-## Install
+## Installation
+
+### macOS and Linux (one-command install)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/koller-nexus/velox/main/scripts/install.sh | sh
+```
+
+The installer detects your OS and architecture, downloads the correct archive,
+verifies the SHA256 checksum, and installs `velox` to `/usr/local/bin` (or
+`~/.local/bin` if you don't have write permission). Make sure the chosen
+directory is on your `PATH`.
+
+You can override the version or install directory:
+
+```bash
+VERSION=v1.2.3 INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/koller-nexus/velox/main/scripts/install.sh | sh
+```
+
+### macOS (Homebrew)
+
+```bash
+brew tap koller-nexus/tap
+brew install velox
+```
+
+### Windows
+
+Download the latest `.zip` for your architecture from the
+[Releases](https://github.com/koller-nexus/velox/releases) page, extract it, and
+run `velox.exe`. No external runtime is required.
+
+### Fallback: install with Go
+
+If you already have Go installed:
 
 ```bash
 go install github.com/koller-nexus/velox/cmd/velox@latest
-# or build locally:
+```
+
+### Build from source
+
+```bash
 make build && ./bin/velox --version
 ```
 
-Pre-built static binaries for Linux, macOS, and Windows (amd64 + arm64) are
-produced by `make cross` (output in `dist/`).
+Pre-built static binaries for Linux, macOS, and Windows are produced
+automatically on every release tag by GoReleaser.
 
 ## Usage
 
