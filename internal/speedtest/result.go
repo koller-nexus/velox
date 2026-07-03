@@ -2,7 +2,11 @@
 // connectivity, latency, download, and upload.
 package speedtest
 
-import "time"
+import (
+	"time"
+
+	"github.com/koller-nexus/velox/internal/provider"
+)
 
 // Phase names a stage of a run.
 type Phase string
@@ -33,14 +37,15 @@ type ServerInfo struct {
 // MeasurementResult is the outcome of a `velox --check-internet` run. Its JSON
 // encoding conforms to contracts/result.schema.json.
 type MeasurementResult struct {
-	Online       bool                   `json:"online"`
-	LatencyMs    float64                `json:"latencyMs,omitempty"`
-	JitterMs     float64                `json:"jitterMs,omitempty"`
-	DownloadMbps float64                `json:"downloadMbps,omitempty"`
-	UploadMbps   float64                `json:"uploadMbps,omitempty"`
-	Server       *ServerInfo            `json:"server,omitempty"`
-	DistanceKm   *float64               `json:"distanceKm"`
-	StartedAt    time.Time              `json:"startedAt"`
-	DurationMs   int64                  `json:"durationMs"`
-	PhaseStatus  map[Phase]PhaseOutcome `json:"phaseStatus"`
+	Online          bool                   `json:"online"`
+	LatencyMs       float64                `json:"latencyMs,omitempty"`
+	JitterMs        float64                `json:"jitterMs,omitempty"`
+	DownloadMbps    float64                `json:"downloadMbps,omitempty"`
+	UploadMbps      float64                `json:"uploadMbps,omitempty"`
+	Server          *ServerInfo            `json:"server,omitempty"`
+	DistanceKm      *float64               `json:"distanceKm"`
+	NearestProvider *provider.Result       `json:"nearestProvider,omitempty"`
+	StartedAt       time.Time              `json:"startedAt"`
+	DurationMs      int64                  `json:"durationMs"`
+	PhaseStatus     map[Phase]PhaseOutcome `json:"phaseStatus"`
 }

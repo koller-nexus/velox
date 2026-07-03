@@ -24,10 +24,11 @@ produced by `make cross` (output in `dist/`).
 ## Usage
 
 ```bash
-velox --check-internet           # run a full speed test
-velox --check-internet --json    # machine-readable output
-velox --check-internet --no-progress  # disable the loading indicator
-velox --server <wss-url>         # test against a specific ndt7 server
+velox --check-internet                       # run a full speed test
+velox --check-internet --json                # machine-readable output
+velox --check-internet --no-progress         # disable the loading indicator
+velox --check-internet --nearest-provider    # target the server nearest to your closest ISP POP
+velox --server <wss-url>                     # test against a specific ndt7 server
 velox --version
 velox --help
 ```
@@ -57,11 +58,18 @@ Example:
 
 ```text
 Velox speed test
-  Server:    mlab2-fln01 (Florianopolis, BR) — 12 km
-  Latency:   7.8 ms   (jitter 1.2 ms)
-  Download:  347.2 Mbps
-  Upload:    322.5 Mbps
+  Server:           mlab2-fln01 (Florianopolis, BR) — 12 km
+  Nearest provider: Vivo (São Paulo — Centro) — 2.3 km
+  Latency:          7.8 ms   (jitter 1.2 ms)
+  Download:         347.2 Mbps
+  Upload:           322.5 Mbps
 ```
+
+With `--nearest-provider`, velox selects the M-Lab test server closest to the
+POP of the provider nearest to you. The nearest-provider line is shown whenever
+location consent is granted and a match exists in the bundled provider catalog;
+it is omitted (with a silent fallback to default server selection) when consent
+is denied, the lookup fails, or no provider POP is nearby.
 
 On an interactive terminal, velox shows an animated loading indicator on stderr
 while the test runs (selecting server → checking connectivity → measuring
@@ -99,8 +107,9 @@ velox consent --reset      # forget the decision (asked again next time)
 - Your decision is stored locally under your OS config directory.
 - If you **decline** — or run non-interactively (CI, cron, pipes) — velox never
   performs a location lookup and falls back to a default/auto-discovered server;
-  no client→server distance is shown.
-- The location estimate is held in memory only and never written to disk.
+  no client→server distance or nearest-provider metadata is shown.
+- The location estimate and nearest-provider result are held in memory only and
+  never written to disk.
 
 ## Development
 

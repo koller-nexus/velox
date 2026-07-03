@@ -35,10 +35,18 @@ func renderHuman(w io.Writer, res speedtest.MeasurementResult) {
 			loc = fmt.Sprintf("%s (%s, %s)", res.Server.Machine, res.Server.City, res.Server.Country)
 		}
 		if res.DistanceKm != nil {
-			fmt.Fprintf(w, "  Server:    %s — %.0f km\n", loc, *res.DistanceKm)
+			fmt.Fprintf(w, "  Server:    %s — %.0f km", loc, *res.DistanceKm)
 		} else {
-			fmt.Fprintf(w, "  Server:    %s\n", loc)
+			fmt.Fprintf(w, "  Server:    %s", loc)
 		}
+		if res.NearestProvider != nil && res.NearestProvider.SelectedServer != nil {
+			fmt.Fprint(w, "  [nearest-provider target]")
+		}
+		fmt.Fprintln(w)
+	}
+	if res.NearestProvider != nil {
+		np := res.NearestProvider
+		fmt.Fprintf(w, "  Nearest provider: %s (%s) — %.1f km\n", np.Provider.Name, np.POP.Label, np.DistanceKm)
 	}
 	fmt.Fprintf(w, "  Latency:   %.1f ms   (jitter %.1f ms)\n", res.LatencyMs, res.JitterMs)
 	fmt.Fprintf(w, "  Download:  %.1f Mbps\n", res.DownloadMbps)

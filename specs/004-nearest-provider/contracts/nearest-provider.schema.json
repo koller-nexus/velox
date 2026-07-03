@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://velox.dev/schemas/nearest-provider.schema.json",
+  "title": "Nearest Provider Result",
+  "description": "Runtime result describing the provider POP closest to the user.",
+  "type": "object",
+  "required": ["provider", "pop", "distanceKm"],
+  "properties": {
+    "provider": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" }
+      }
+    },
+    "pop": {
+      "type": "object",
+      "required": ["label", "city", "country", "lat", "lon"],
+      "properties": {
+        "label": { "type": "string" },
+        "city": { "type": "string" },
+        "region": { "type": "string" },
+        "country": { "type": "string" },
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+      }
+    },
+    "distanceKm": {
+      "type": "number",
+      "minimum": 0
+    },
+    "selectedServer": {
+      "type": "object",
+      "description": "Optional M-Lab server chosen when --nearest-provider is active.",
+      "properties": {
+        "machine": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    }
+  }
+}

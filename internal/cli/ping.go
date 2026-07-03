@@ -39,7 +39,7 @@ func (a *App) pingCommand() *Command {
 			ctx, cancel := context.WithTimeout(ctx, *timeout)
 			defer cancel()
 
-			srv, dist := a.selectServer(ctx, *server, false)
+			srv, dist, _ := a.selectServer(ctx, *server, false, false)
 			res := a.Runner.Latency(ctx, srv, dist)
 
 			if *asJSON {

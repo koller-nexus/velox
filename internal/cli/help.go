@@ -18,11 +18,12 @@ USAGE:
 
 const overviewOutro = `
 FLAGS (velox --check-internet):
-  --json            Emit machine-readable JSON.
-  --server <url>    Override the test server (ndt7 service URL).
-  --timeout <dur>   Overall run budget (default 60s).
-  --no-progress     Disable the loading indicator.
-  -v, --verbose     Verbose diagnostics on stderr.
+  --json               Emit machine-readable JSON.
+  --server <url>       Override the test server (ndt7 service URL).
+  --nearest-provider   Prefer the M-Lab server nearest to your closest ISP POP.
+  --timeout <dur>      Overall run budget (default 60s).
+  --no-progress        Disable the loading indicator.
+  -v, --verbose        Verbose diagnostics on stderr.
 
 Run 'velox help <command>' for details on a specific command.
 `

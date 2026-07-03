@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://velox.dev/schemas/provider-catalog.schema.json",
+  "title": "ISP Provider Catalog",
+  "description": "Embedded catalog of internet providers and their points of presence.",
+  "type": "object",
+  "required": ["version", "providers", "pops"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "providers": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9_-]+$": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "countryCodes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "pops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["providerCode", "label", "city", "country", "lat", "lon"],
+        "properties": {
+          "providerCode": { "type": "string" },
+          "label": { "type": "string" },
+          "city": { "type": "string" },
+          "region": { "type": "string" },
+          "country": { "type": "string" },
+          "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+          "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+        }
+      }
+    }
+  }
+}

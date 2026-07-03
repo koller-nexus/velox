@@ -42,10 +42,11 @@ type FallbackServer struct {
 
 // Config is the persisted velox configuration.
 type Config struct {
-	SchemaVersion  int             `json:"schemaVersion"`
-	Consent        Consent         `json:"consent"`
-	GeoEndpoint    string          `json:"geoEndpoint,omitempty"`
-	FallbackServer *FallbackServer `json:"fallbackServer,omitempty"`
+	SchemaVersion   int             `json:"schemaVersion"`
+	Consent         Consent         `json:"consent"`
+	GeoEndpoint     string          `json:"geoEndpoint,omitempty"`
+	NearestProvider bool            `json:"nearestProvider,omitempty"`
+	FallbackServer  *FallbackServer `json:"fallbackServer,omitempty"`
 }
 
 // Default returns a fresh config with an unset consent decision.

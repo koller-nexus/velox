@@ -2,6 +2,11 @@ package consent
 
 import "os"
 
+// IsTerminal reports whether f refers to a character device (terminal).
+func IsTerminal(f *os.File) bool {
+	return isCharDevice(f)
+}
+
 // isInteractive reports whether both stdin and stdout are terminals, so a
 // consent prompt can be shown and answered. Used to decide the non-interactive
 // default (decline) per FR-007 / SC-004.

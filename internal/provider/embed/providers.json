@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "providers": {
+    "claro": {
+      "name": "Claro",
+      "countryCodes": ["BR"]
+    },
+    "vivo": {
+      "name": "Vivo",
+      "countryCodes": ["BR"]
+    },
+    "oi": {
+      "name": "Oi",
+      "countryCodes": ["BR"]
+    },
+    "tim": {
+      "name": "TIM",
+      "countryCodes": ["BR"]
+    },
+    "algar": {
+      "name": "Algar",
+      "countryCodes": ["BR"]
+    }
+  },
+  "pops": [
+    { "providerCode": "claro", "label": "São Paulo — Centro", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.5505, "lon": -46.6333 },
+    { "providerCode": "claro", "label": "Rio de Janeiro — Centro", "city": "Rio de Janeiro", "region": "RJ", "country": "BR", "lat": -22.9068, "lon": -43.1729 },
+    { "providerCode": "claro", "label": "Belo Horizonte — Centro", "city": "Belo Horizonte", "region": "MG", "country": "BR", "lat": -19.9167, "lon": -43.9345 },
+    { "providerCode": "claro", "label": "Curitiba — Centro", "city": "Curitiba", "region": "PR", "country": "BR", "lat": -25.4290, "lon": -49.2671 },
+    { "providerCode": "claro", "label": "Porto Alegre — Centro", "city": "Porto Alegre", "region": "RS", "country": "BR", "lat": -30.0346, "lon": -51.2177 },
+    { "providerCode": "claro", "label": "Brasília — Plano Piloto", "city": "Brasília", "region": "DF", "country": "BR", "lat": -15.7975, "lon": -47.8919 },
+    { "providerCode": "claro", "label": "Salvador — Centro", "city": "Salvador", "region": "BA", "country": "BR", "lat": -12.9714, "lon": -38.5014 },
+    { "providerCode": "claro", "label": "Fortaleza — Centro", "city": "Fortaleza", "region": "CE", "country": "BR", "lat": -3.7327, "lon": -38.5270 },
+    { "providerCode": "claro", "label": "Recife — Centro", "city": "Recife", "region": "PE", "country": "BR", "lat": -8.0476, "lon": -34.8770 },
+    { "providerCode": "claro", "label": "Manaus — Centro", "city": "Manaus", "region": "AM", "country": "BR", "lat": -3.1190, "lon": -60.0217 },
+
+    { "providerCode": "vivo", "label": "São Paulo — Centro", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.5505, "lon": -46.6333 },
+    { "providerCode": "vivo", "label": "São Paulo — Berrini", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.6234, "lon": -46.6956 },
+    { "providerCode": "vivo", "label": "Rio de Janeiro — Centro", "city": "Rio de Janeiro", "region": "RJ", "country": "BR", "lat": -22.9068, "lon": -43.1729 },
+    { "providerCode": "vivo", "label": "Belo Horizonte — Centro", "city": "Belo Horizonte", "region": "MG", "country": "BR", "lat": -19.9167, "lon": -43.9345 },
+    { "providerCode": "vivo", "label": "Curitiba — Centro", "city": "Curitiba", "region": "PR", "country": "BR", "lat": -25.4290, "lon": -49.2671 },
+    { "providerCode": "vivo", "label": "Porto Alegre — Centro", "city": "Porto Alegre", "region": "RS", "country": "BR", "lat": -30.0346, "lon": -51.2177 },
+    { "providerCode": "vivo", "label": "Brasília — Plano Piloto", "city": "Brasília", "region": "DF", "country": "BR", "lat": -15.7975, "lon": -47.8919 },
+    { "providerCode": "vivo", "label": "Salvador — Centro", "city": "Salvador", "region": "BA", "country": "BR", "lat": -12.9714, "lon": -38.5014 },
+    { "providerCode": "vivo", "label": "Fortaleza — Centro", "city": "Fortaleza", "region": "CE", "country": "BR", "lat": -3.7327, "lon": -38.5270 },
+    { "providerCode": "vivo", "label": "Recife — Centro", "city": "Recife", "region": "PE", "country": "BR", "lat": -8.0476, "lon": -34.8770 },
+
+    { "providerCode": "oi", "label": "São Paulo — Centro", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.5505, "lon": -46.6333 },
+    { "providerCode": "oi", "label": "Rio de Janeiro — Centro", "city": "Rio de Janeiro", "region": "RJ", "country": "BR", "lat": -22.9068, "lon": -43.1729 },
+    { "providerCode": "oi", "label": "Belo Horizonte — Centro", "city": "Belo Horizonte", "region": "MG", "country": "BR", "lat": -19.9167, "lon": -43.9345 },
+    { "providerCode": "oi", "label": "Brasília — Plano Piloto", "city": "Brasília", "region": "DF", "country": "BR", "lat": -15.7975, "lon": -47.8919 },
+    { "providerCode": "oi", "label": "Salvador — Centro", "city": "Salvador", "region": "BA", "country": "BR", "lat": -12.9714, "lon": -38.5014 },
+    { "providerCode": "oi", "label": "Recife — Centro", "city": "Recife", "region": "PE", "country": "BR", "lat": -8.0476, "lon": -34.8770 },
+
+    { "providerCode": "tim", "label": "São Paulo — Centro", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.5505, "lon": -46.6333 },
+    { "providerCode": "tim", "label": "Rio de Janeiro — Centro", "city": "Rio de Janeiro", "region": "RJ", "country": "BR", "lat": -22.9068, "lon": -43.1729 },
+    { "providerCode": "tim", "label": "Belo Horizonte — Centro", "city": "Belo Horizonte", "region": "MG", "country": "BR", "lat": -19.9167, "lon": -43.9345 },
+    { "providerCode": "tim", "label": "Curitiba — Centro", "city": "Curitiba", "region": "PR", "country": "BR", "lat": -25.4290, "lon": -49.2671 },
+    { "providerCode": "tim", "label": "Brasília — Plano Piloto", "city": "Brasília", "region": "DF", "country": "BR", "lat": -15.7975, "lon": -47.8919 },
+
+    { "providerCode": "algar", "label": "Uberlândia — Centro", "city": "Uberlândia", "region": "MG", "country": "BR", "lat": -18.9128, "lon": -48.2755 },
+    { "providerCode": "algar", "label": "Goiânia — Centro", "city": "Goiânia", "region": "GO", "country": "BR", "lat": -16.6864, "lon": -49.2643 },
+    { "providerCode": "algar", "label": "São Paulo — Centro", "city": "São Paulo", "region": "SP", "country": "BR", "lat": -23.5505, "lon": -46.6333 }
+  ]
+}
