@@ -59,6 +59,7 @@ release:
     name: velox
   draft: false
   prerelease: auto
+  replace_existing_artifacts: true
 
 brews:
   - name: velox
