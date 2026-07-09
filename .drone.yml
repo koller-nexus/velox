@@ -65,15 +65,11 @@ trigger:
     - main
 
 steps:
-  - name: install-scanners
-    image: golang:1.26.4-alpine
-    commands:
-      - go install github.com/securego/gosec/v2/cmd/gosec@latest
-      - go install golang.org/x/vuln/cmd/govulncheck@latest
-
   - name: security-gate
     image: golang:1.26.4-alpine
     environment:
       VELOX_SEVERITY: high
     commands:
+      - go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
       - ./scripts/security.sh
