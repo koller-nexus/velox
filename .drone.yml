@@ -35,6 +35,8 @@ steps:
 
   - name: test-race
     image: golang:1.26.4-alpine
+    environment:
+      CGO_ENABLED: '1'
     commands:
       - go test -race ./...
 
