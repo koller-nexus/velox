@@ -8,6 +8,7 @@ trigger:
   event:
     - push
     - pull_request
+    - custom
   branch:
     - main
 
@@ -49,7 +50,7 @@ steps:
   - name: build
     image: golang:1.26.4-alpine
     environment:
-      CGO_ENABLED: "0"
+      CGO_ENABLED: '0'
     commands:
       - go build ./...
 
