@@ -1,0 +1,90 @@
+---
+kind: pipeline
+type: docker
+name: build-test
+
+# Trigger: push na main ou PR (Drone dispara por padrão em push/PR)
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - main
+
+steps:
+  - name: checkout
+    image: alpine/git
+    commands:
+      - git clone $DRONE_GIT_HTTP_URL .
+      - git checkout $DRONE_COMMIT
+
+  - name: gofmt
+    image: golang:1.26.4-alpine
+    commands:
+      - apk add --no-cache git
+      - gofmt -l .
+      - |
+        out="$(gofmt -l .)"
+        if [ -n "$out" ]; then
+          echo "unformatted:"
+          echo "$out"
+          exit 1
+        fi
+
+  - name: go-vet
+    image: golang:1.26.4-alpine
+    commands:
+      - go vet ./...
+
+  - name: golangci-lint
+    image: golangci/golangci-lint:v2.12.2-alpine
+    commands:
+      - golangci-lint run ./...
+
+  - name: test-race
+    image: golang:1.26.4-alpine
+    commands:
+      - go test -race ./...
+
+  - name: build
+    image: golang:1.26.4-alpine
+    environment:
+      CGO_ENABLED: "0"
+    commands:
+      - go build ./...
+
+---
+kind: pipeline
+type: docker
+name: security
+
+# Só roda se build-test passar
+depends_on:
+  - build-test
+
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    - main
+
+steps:
+  - name: checkout
+    image: alpine/git
+    commands:
+      - git clone $DRONE_GIT_HTTP_URL .
+      - git checkout $DRONE_COMMIT
+
+  - name: install-scanners
+    image: golang:1.26.4-alpine
+    commands:
+      - go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
+
+  - name: security-gate
+    image: golang:1.26.4-alpine
+    environment:
+      VELOX_SEVERITY: high
+    commands:
+      - ./scripts/security.sh
