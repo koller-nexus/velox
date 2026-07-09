@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
 # velox security gate: gosec (static analysis) + govulncheck (dependency CVEs).
 # Fails (exit 1) when a finding meets or exceeds the severity threshold.
@@ -6,8 +6,8 @@
 #   FR-012/FR-013, research R6, clarification Q5.
 #
 # Override threshold:  VELOX_SEVERITY=medium ./scripts/security.sh
-# Library mode (for tests): VELOX_SECURITY_LIB=1 source ./scripts/security.sh
-set -euo pipefail
+# Library mode (for tests): VELOX_SECURITY_LIB=1 . ./scripts/security.sh
+set -eu
 
 VELOX_SEVERITY="${VELOX_SEVERITY:-high}"
 
