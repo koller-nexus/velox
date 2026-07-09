@@ -7,7 +7,7 @@ test server — with no API key, no elevated privileges, and an explicit consent
 gate before it ever uses your location.
 
 [![CI](https://github.com/koller-nexus/velox/actions/workflows/ci.yml/badge.svg)](https://github.com/koller-nexus/velox/actions/workflows/ci.yml)
-![Go 1.26](https://img.shields.io/badge/go-1.26.4-00ADD8)
+![Go 1.26](https://img.shields.io/badge/go-1.26.5-00ADD8)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 ## Installation

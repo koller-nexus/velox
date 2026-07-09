@@ -13,7 +13,7 @@ trigger:
 
 steps:
   - name: gofmt
-    image: golang:1.26.4-alpine
+    image: golang:1.26.5-alpine
     commands:
       - |
         out="$(gofmt -l .)"
@@ -24,7 +24,7 @@ steps:
         fi
 
   - name: go-vet
-    image: golang:1.26.4-alpine
+    image: golang:1.26.5-alpine
     commands:
       - go vet ./...
 
@@ -34,7 +34,7 @@ steps:
       - golangci-lint run ./...
 
   - name: test-race
-    image: golang:1.26.4-alpine
+    image: golang:1.26.5-alpine
     environment:
       CGO_ENABLED: '1'
     commands:
@@ -42,7 +42,7 @@ steps:
       - go test -race ./...
 
   - name: build
-    image: golang:1.26.4-alpine
+    image: golang:1.26.5-alpine
     environment:
       CGO_ENABLED: '0'
     commands:
@@ -66,7 +66,7 @@ trigger:
 
 steps:
   - name: security-gate
-    image: golang:1.26.4-alpine
+    image: golang:1.26.5-alpine
     environment:
       VELOX_SEVERITY: high
     commands:

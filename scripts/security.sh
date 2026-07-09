@@ -34,8 +34,8 @@ gate_exit() {
 
 run_gosec() {
   if ! command -v gosec >/dev/null 2>&1; then
-    echo "WARN: gosec not installed; install: go install github.com/securego/gosec/v2/cmd/gosec@latest" >&2
-    return 0
+    echo "ERROR: gosec not installed; install: go install github.com/securego/gosec/v2/cmd/gosec@latest" >&2
+    return 1
   fi
   echo ">> gosec (threshold: ${VELOX_SEVERITY})"
   # gosec exits non-zero when it reports issues at/above -severity.
@@ -47,8 +47,8 @@ run_gosec() {
 
 run_govulncheck() {
   if ! command -v govulncheck >/dev/null 2>&1; then
-    echo "WARN: govulncheck not installed; install: go install golang.org/x/vuln/cmd/govulncheck@latest" >&2
-    return 0
+    echo "ERROR: govulncheck not installed; install: go install golang.org/x/vuln/cmd/govulncheck@latest" >&2
+    return 1
   fi
   echo ">> govulncheck"
   # govulncheck exits non-zero (3) when vulnerabilities affect the build.

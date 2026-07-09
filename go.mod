@@ -1,6 +1,6 @@
 module github.com/koller-nexus/velox
 
-go 1.26.4
+go 1.26.5
 
 require github.com/m-lab/ndt7-client-go v0.10.1
 
