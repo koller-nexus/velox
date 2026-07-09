@@ -3,7 +3,6 @@ kind: pipeline
 type: docker
 name: build-test
 
-# Trigger: push na main ou PR (Drone dispara por padrão em push/PR)
 trigger:
   event:
     - push
@@ -13,17 +12,9 @@ trigger:
     - main
 
 steps:
-  - name: checkout
-    image: alpine/git
-    commands:
-      - git clone $DRONE_GIT_HTTP_URL .
-      - git checkout $DRONE_COMMIT
-
   - name: gofmt
     image: golang:1.26.4-alpine
     commands:
-      - apk add --no-cache git
-      - gofmt -l .
       - |
         out="$(gofmt -l .)"
         if [ -n "$out" ]; then
@@ -59,7 +50,6 @@ kind: pipeline
 type: docker
 name: security
 
-# Só roda se build-test passar
 depends_on:
   - build-test
 
@@ -67,16 +57,11 @@ trigger:
   event:
     - push
     - pull_request
+    - custom
   branch:
     - main
 
 steps:
-  - name: checkout
-    image: alpine/git
-    commands:
-      - git clone $DRONE_GIT_HTTP_URL .
-      - git checkout $DRONE_COMMIT
-
   - name: install-scanners
     image: golang:1.26.4-alpine
     commands:
